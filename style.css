@@ -1,0 +1,150 @@
+#container 
+{
+	position:relative;
+	width: 320px;
+	height: 320px;
+	float: left;
+	margin-left: 50px;
+	margin-right: 50px;
+	margin-top: 50px;
+	margin-bottom: 50px;
+}
+
+#myCanvas{
+	z-index:1;
+}
+
+.q 
+{
+	position:absolute;
+	z-index:2;
+	width: 97px;
+	height: 97px;
+	float: left;
+	margin: 0;
+	padding: 0;
+	text-align: center;
+	font-family: sand-serif;
+	font-size: 100px;
+	color:transparent;
+}
+
+#q0
+{
+	top:100px;
+	left:30px;
+}
+
+#q1
+{
+	top:100px;
+	left:132px;
+}
+
+#q2
+{
+	top:100px;
+	left:232px;
+}
+
+#q3
+{
+	top:202px;
+	left:31px;
+}
+
+#q4
+{
+	top:202px;
+	left:132px;
+}
+
+#q5
+{
+	top:202px;
+	left:232px;
+}
+
+#q6
+{
+	top:302px;
+	left:30px;
+}
+
+#q7
+{
+	top:302px;
+	left:132px;
+}
+
+#q8
+{
+	top:302px;
+	left:232px;
+}
+
+.q_pointer
+{
+    cursor: pointer;
+}
+
+.q_hover:hover 
+{
+	background-color: lightgreen;
+}
+
+.room
+{
+	position:absolute;
+	z-index:2;
+	width: 500px;
+	height: 50px;
+	float: left;
+	margin: 0;
+	margin-top: 52px;
+	margin-left: 52px;
+	padding: 0;
+	text-align: center;
+	font-family: sand-serif;
+	font-size: 40px;
+	margin-bottom: -5px;
+}
+
+.room2
+{
+	top:57px;
+}
+
+.room_pointer
+{
+	cursor: pointer;
+}
+
+.room_hover:hover
+{
+	opacity:0.5;
+	background-color: lightgreen;
+}
+
+.escape
+{
+	position:absolute;
+	z-index:2;
+	top: 362px;
+	left: 33px;
+	width: 125px;
+	height: 50px;
+	float: left;
+	margin: 0;
+	padding: 0;
+	cursor: pointer;
+	text-align: center;
+	font-size: 20px;
+	margin-top: 90px;
+}
+
+.escape:hover
+{
+	opacity:0.5;
+	background-color: lightgreen;
+}

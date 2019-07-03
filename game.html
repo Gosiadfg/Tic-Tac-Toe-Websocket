@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<link rel="stylesheet" href="style.css">
+		 <title>Kółko i krzyżyk - gra</title>		
+		<body>
+			<div id="container">
+			 <canvas id="myCanvas" width="1000" height="600" style="position:absolute;left:10;top:10"> </canvas>
+			 
+				<div class="q q_hover q_pointer" id="q0"></div>
+				<div class="q q_hover q_pointer" id="q1"></div>
+				<div class="q q_hover q_pointer" id="q2"></div>
+				<div class="q q_hover q_pointer" id="q3"></div>
+				<div class="q q_hover q_pointer" id="q4"></div>
+				<div class="q q_hover q_pointer" id="q5"></div>
+				<div class="q q_hover q_pointer" id="q6"></div>
+				<div class="q q_hover q_pointer" id="q7"></div>
+				<div class="q q_hover q_pointer" id="q8"></div>
+				
+				<a href="index.html"><div class = "escape" id="escape"></div></a>
+			</div>
+		  
+		  <div id="log"> </div>
+		  
+		  <script type="text/javascript" src="server.js"></script>
+		  <script language="javascript">
+			
+			function init(){
+				canvas = document.getElementById("myCanvas");
+				ctx = canvas.getContext("2d");
+				ctx.font = "30px Arial";
+				ctx.fillText("Kółko i krzyżyk", 30, 30);
+				ctx.strokeStyle = "#006400";
+				ctx.lineWidth = 5;
+				ctx.fillStyle = "#006400";			
+				ctx.beginPath();
+				ctx.moveTo(130, 100);
+				ctx.lineTo(130, 400);
+				ctx.stroke();
+				ctx.beginPath();
+				ctx.moveTo(230, 100);
+				ctx.lineTo(230, 400);
+				ctx.stroke();
+				ctx.beginPath();
+				ctx.moveTo(30, 200);
+				ctx.lineTo(330, 200);
+				ctx.stroke();
+				ctx.beginPath();
+				ctx.moveTo(30, 300);
+				ctx.lineTo(330, 300);
+				ctx.stroke();
+				ctx.strokeStyle = "#006400";
+				ctx.lineWidth = 5;
+				ctx.fillStyle = "#006400";
+				ctx.strokeRect(30,450,130,55);
+				ctx.fillText("Wyjście", 45, 490);
+							
+				style=0;
+				
+				sock = new WebSocket("ws://localhost:5001");
+				sock.binaryType = 'arraybuffer';
+				sock.onmessage = function(e) { onMessage(e) };
+				sock.onclose = function(e) { onClose(e); };
+				sock.onopen = function(e) { 
+					 waitForSocketConnection(sock, function() {
+						  //if (window.performance.navigation.type == 1) {
+						//	sock.send(str2ab("refresh"));
+						//	}
+							var type = window.location.hash.substr(1);
+						   sock.send(str2ab(type));
+					});
+				 };
+			}
+			
+			function ab2str(buf) {
+				var bufView = new Uint16Array(buf);
+				var unis =""
+				for (var i = 0; i < bufView.length; i++) {
+					unis=unis+String.fromCharCode(bufView[i]);
+				}
+				return unis;
+			}
+
+			function str2ab(str) {
+				var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
+				var bufView = new Uint16Array(buf);
+				for (var i=0, strLen=str.length; i<strLen; i++) {
+					bufView[i] = str.charCodeAt(i);
+				}
+				return buf;
+			}
+			
+			function waitForSocketConnection(socket, callback){
+				setTimeout(
+					function(){
+						if (socket.readyState === 1) {
+							if(callback !== undefined) callback();
+							return;
+						} else waitForSocketConnection(socket,callback);
+					}, 5);
+			};
+			
+			function onMessage(event){
+				var data=ab2str(event.data);
+				
+				if(data=="style"){
+				style=1;
+				var element;
+					for( var i = 0; i < 10; i++){ 
+						element = document.getElementById("q"+i);
+						element.classList.remove("q_hover");
+						element.classList.remove("q_pointer");
+					}
+				}
+				else if(data=="style2"){
+				style=0;
+				var element;
+					for( var i = 0; i < 10; i++){ 
+						element = document.getElementById("q"+i);
+						if (document.getElementById("q"+i).innerHTML=="")
+						{
+							element.classList.add("q_hover");
+							element.classList.add("q_pointer");
+						}
+					}
+				}
+				else if(data.length==17){ 
+				  for( var i = 0; i < 10; i++){ 
+					if(data[i*2]==1){	
+						
+						var element = document.getElementById("q"+i);
+						var styl = window.getComputedStyle(element);
+						var top = parseInt(styl.getPropertyValue('top'));
+						var left = parseInt(styl.getPropertyValue('left'));
+
+						ctx.moveTo(left, top);
+						ctx.lineTo(left+97, top+97);
+						ctx.moveTo(left,top+97);
+						ctx.lineTo(left+97, top);
+						ctx.stroke();
+
+						element.classList.remove("q_hover");
+						element.classList.remove("q_pointer");
+						
+						document.getElementById("q"+i).innerHTML  = 'x'; 
+					}
+					
+					if(data[i*2]==2){
+
+						var element = document.getElementById("q"+i);
+						var styl = window.getComputedStyle(element);
+						var top = parseInt(styl.getPropertyValue('top'));
+						var left = parseInt(styl.getPropertyValue('left'));
+						
+						ctx.moveTo(left+97, top+48);
+						ctx.arc(left+48,top+48,50,0,Math.PI*2,true);
+						ctx.stroke(); 
+
+						element.classList.remove("q_hover");
+						element.classList.remove("q_pointer");
+						
+						document.getElementById("q"+i).innerHTML  = 'o'; 
+					} 	
+					if(data[i*2]==0) document.getElementById("q"+i).innerHTML  = ''; 
+				  }
+				}
+				else{
+				 ctx.clearRect(350,0,800,800);
+				 ctx.fillText(data, 350, 30);
+				}
+			}		
+			
+			document.getElementById('container').onclick = function(event) {
+			 if(style==0 || event.target.id=="escape"){
+				 if (document.getElementById(event.target.id).innerHTML ==""){
+				   sock.send(str2ab(event.target.id));
+				 } 
+			 }
+			};	
+			
+			window.addEventListener('beforeunload', (event) => {
+			    sock.send(str2ab("style"+style));
+				return null;
+			})
+
+			window.addEventListener("load", init, false);
+		  </script>		
+		</body>
+	</head>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<link rel="stylesheet" href="style.css">
+		 <title>Kółko i krzyżyk - wybór pokoju</title>		
+		<body>
+			<div id="container">	
+				 <a href="game.html#1" style="" id="link1"><div class = "room room_hover room_pointer" id="room1"></div></a> 
+				  <canvas id="myCanvas" width="800" height="600" style="position:absolute;left:10;top:10"> </canvas>
+				 <a href="game.html#2" style="" id="link2"><div class = "room room2 room_hover room_pointer" id="room2"></div></a>
+			</div>			 
+		  <script type="text/javascript" src="server.js"></script>
+		  <script language="javascript">
+			
+			function init(){
+				canvas = document.getElementById("myCanvas");
+				ctx = canvas.getContext("2d");
+				ctx.font = "30px Arial";
+				ctx.fillText("Kółko i krzyżyk - wybór pokoju", 50, 25);
+				ctx.strokeStyle = "#006400";
+				ctx.lineWidth = 5;
+				ctx.fillStyle = "#006400";
+				ctx.strokeRect(50,50,505,55);
+				ctx.strokeRect(50,105,505,55);
+				
+				sock = new WebSocket("ws://localhost:5001");
+				sock.binaryType = 'arraybuffer';
+				sock.onopen = function() { onOpen() };
+				sock.onclose = function(e) { onClose(e) };
+				sock.onmessage = function(e) { onMessage(e) };
+				block1=0;
+				block2=0;			
+			}
+
+			function ab2str(buf) {
+				var bufView = new Uint16Array(buf);
+				var unis =""
+				for (var i = 0; i < bufView.length; i++) {
+					unis=unis+String.fromCharCode(bufView[i]);
+				}
+				return unis;
+			}
+
+			function str2ab(str) {
+				var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
+				var bufView = new Uint16Array(buf);
+				for (var i=0, strLen=str.length; i<strLen; i++) {
+					bufView[i] = str.charCodeAt(i);
+				}
+				return buf;
+			}
+
+			function onMessage(msg){		  
+			  var element;
+			  var buf= ab2str(msg.data);
+			
+			  if(buf=='block1'){
+				block1=1;
+				element = document.getElementById("room1");
+				element.classList.remove("room_hover");
+				element.classList.remove("room_pointer");
+				document.getElementById("link1").style.cursor="default";
+				document.getElementById("link1").href="";
+			  }
+			  else if(buf=="block2"){
+				block2=1;
+				element = document.getElementById("room2");
+				element.classList.remove("room_hover");
+				element.classList.remove("room_pointer");
+				document.getElementById("link2").style.cursor="default";
+				document.getElementById("link2").href="";
+			  }
+			  else if(buf=="unblock1"){
+				block1=0;
+				element = document.getElementById("room1");
+				element.classList.add("room_hover");
+				element.classList.add("room_pointer");
+				document.getElementById("link1").style.cursor="pointer";
+				document.getElementById("link1").href="game.html#1";
+				}
+			  else if(buf=="unblock2"){
+				block2=0;
+				element = document.getElementById("room2");
+				element.classList.add("room_hover");
+				element.classList.add("room_pointer");
+				document.getElementById("link2").style.cursor="pointer";
+				document.getElementById("link2").href="game.html#2";
+			  }
+			  else{
+				ctx.clearRect(50,50,505,55);
+				ctx.clearRect(50,108,505,52);
+				ctx.fillText("Gra nr 1 - " + buf[0] + " graczy.", 70, 85);
+			    ctx.fillText("Gra nr 2 - " + buf[2] + " graczy.", 70, 145);	
+			  }
+			}
+
+			function onOpen(){
+			  sock.send(str2ab("index"));
+			}
+			
+			document.getElementById('container').onclick = function(event) {
+		       if (event.target.id=="room1" && block1==0 ||event.target.id=="room2" && block2==0){
+				sock.send(str2ab(event.target.id));	
+			   }
+			};
+			
+			window.addEventListener("load", init, false);
+		  </script>	
+		</body>
+	</head>
+</html>
